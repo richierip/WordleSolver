@@ -1,19 +1,13 @@
-from ctypes.wintypes import WORD
-from os import name
 import re
 import copy
 import itertools
-# from itertools import chain, combinations
-# def all_subsets(ss):
-#     return chain(*map(lambda x: combinations(ss, x), range(0, len(ss)+1)))
 
 WORDLENGTH = 5
 
-
 def get_input():
-    foundLetters = input("Enter letters with known position, followed by a comma (eg: a0,r3) \n >").split(',')
-    inWord = input("Enter letters that are known to be in the word and their possible positions after, separated by commas(eg: a124,r12) \n >").split(',')
-    possible = input("Enter letters that might still be in the word \n >").replace(' ','') # ex 'abcfiomprq'
+    foundLetters = input("Enter letters with known position, zero indexed, separated by a comma (eg: a0,r3) \n >").replace(' ','').split(',')
+    inWord = input("Enter letters that are known to be in the word and their possible positions after, zero indexed, separated by commas(eg: a124,r12) \n >").replace(' ','').split(',')
+    possible = input("Enter letters that might still be in the word, no spaces (eg: abcd) \n >").replace(' ','') # ex 'abcfiomprq'
     return foundLetters, inWord, possible
 
 def get_words():
@@ -34,43 +28,31 @@ def create_pattern(found, inWord, possible):
     allKeys = list(inWordDictionary.keys())
     allPatterns = []
 
-    print(f'\n Here is the found dict : {foundDictionary} ')
-    print(f'\n Here is the word dict : {inWordDictionary} ')
-    print(f'\n Here are all word dict keys : {type(list(inWordDictionary.keys()))} and also {list(inWordDictionary.keys())} ')
-    print(f'\n Here are all combinations : {allCombinations} ')
-    print(f'\n Here is the fondDict : {foundDictionary} ')
-
-    #allPatterns = all_subsets(inWordDictionary.keys())
     for combo in allCombinations:
         if len(set(combo)) < len(combo): # Can't choice same index in output pattern for a letter
             continue
         elif set(foundDictionary.keys()) & set(combo) != set() :
             continue
 
-
-        cur = '^'
+        currentRE = '^'
         for i in range(WORDLENGTH):
             if str(i) in foundDictionary.keys():
-                cur += foundDictionary[str(i)]+'{1}' 
+                currentRE += foundDictionary[str(i)]+'{1}' 
                 continue
 
             elif str(i) in combo:
-                cur += allKeys[combo.index(str(i))]+'{1}'
+                currentRE += allKeys[combo.index(str(i))]+'{1}'
                 continue
             else:
-                cur += '[' + possible + ']{1}'   
-        print(f'\n$$$$--- Combo is {combo}, pattern is {cur + "$" }')             
-        allPatterns.append(re.compile(cur + '$'))
-    return allPatterns
-            
+                currentRE += '[' + possible + ']{1}'           
+        allPatterns.append(re.compile(currentRE + '$'))
+    return allPatterns   
 
 def remove_dups(wordset):
     return list(set(wordset))
 
-
 def check(words, customRESet):
     found = []
-    test = True
     for word in words:
         word = word.split(chr(10))[0].lower()
         for RE in customRESet:
@@ -80,18 +62,15 @@ def check(words, customRESet):
 
     return found
 
+
 def main():
     first, second, third = get_input()
-    #customRE1 = re.compile('^a{1}(q|w|y|p|f|j|x|v|b){2}e{1}(q|w|y|p|f|j|x|v|b){1}$') # Should use [qwypfjxvb]
-    #customRE2 = re.compile('^a{1}e{1}(q|w|y|p|f|j|x|v|b){3}$')
     customRE = create_pattern(first,second,third)
-
     allWords = get_words()
     found = check(allWords,customRE)
 
     print(f'\n I found these: {sorted(found)}')
-
-    print(f'\n The custom RE is : {customRE}')
+    #print(f'\n The custom RE is : {customRE}')
 
 if __name__ == '__main__':
     main()
