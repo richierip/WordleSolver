@@ -30,45 +30,37 @@ def create_pattern(found, inWord, possible):
         foundDictionary[i[1]] = i[0] 
     
     inWordDictionary = {i[0]: i[1:] for i in inWord} # This is DIRTY lambda: int(x) for x in
-    allPatterns = list(itertools.product(*inWordDictionary.values()))
+    allCombinations = list(itertools.product(*inWordDictionary.values()))
     allKeys = list(inWordDictionary.keys())
+    allPatterns = []
 
-    print(f'\n Here is the custom dict : {inWordDictionary} ')
-    print(f'\n Here are all keys : {type(list(inWordDictionary.keys()))} and also {list(inWordDictionary.keys())} ')
-    print(f'\n Here are all patterns : {allPatterns} ')
+    print(f'\n Here is the found dict : {foundDictionary} ')
+    print(f'\n Here is the word dict : {inWordDictionary} ')
+    print(f'\n Here are all word dict keys : {type(list(inWordDictionary.keys()))} and also {list(inWordDictionary.keys())} ')
+    print(f'\n Here are all combinations : {allCombinations} ')
     print(f'\n Here is the fondDict : {foundDictionary} ')
 
     #allPatterns = all_subsets(inWordDictionary.keys())
-    for x in range(0,len(inWord)-1):
-        for y in range(x+1, len(inWord)):
-            print(f'\n##xy {x} - {y}')
-            firstLetter = list(inWordDictionary)[x]
-            secondLetter = list(inWordDictionary)[y]
-            print(f'##xyletter {firstLetter} - {secondLetter}')
+    for combo in allCombinations:
+        if len(set(combo)) < len(combo): # Can't choice same index in output pattern for a letter
+            continue
+        elif set(foundDictionary.keys()) & set(combo) != set() :
+            continue
 
-            for firstIndex in inWordDictionary[firstLetter]:
-                for secondIndex in inWordDictionary[secondLetter]:
-                    print(f'\n##xyindex {firstIndex} - {secondIndex}')
-                    if firstIndex == secondIndex:
-                        continue
-                    cur = '^'
-                    for i in range(WORDLENGTH):
-                        if str(i) in foundDictionary.keys():
-                            cur += foundDictionary[str(i)]+'{1}' 
-                            continue
 
-                        elif str(i) == firstIndex:
-                            cur += firstLetter+'{1}'
-                            continue
-                        elif str(i) == secondIndex:
-                            cur += secondLetter+'{1}'
-                            continue
-                        else:
-                            cur += '[' + possible + ']{1}'
-                            
-                    
-                    allPatterns.append(cur + '$')
+        cur = '^'
+        for i in range(WORDLENGTH):
+            if str(i) in foundDictionary.keys():
+                cur += foundDictionary[str(i)]+'{1}' 
+                continue
 
+            elif str(i) in combo:
+                cur += allKeys[combo.index(str(i))]+'{1}'
+                continue
+            else:
+                cur += '[' + possible + ']{1}'   
+        print(f'\n$$$$--- Combo is {combo}, pattern is {cur + "$" }')             
+        allPatterns.append(re.compile(cur + '$'))
     return allPatterns
             
 
@@ -94,12 +86,12 @@ def main():
     #customRE2 = re.compile('^a{1}e{1}(q|w|y|p|f|j|x|v|b){3}$')
     customRE = create_pattern(first,second,third)
 
-    # allWords = get_words()
-    # found = check(allWords,customRE)
+    allWords = get_words()
+    found = check(allWords,customRE)
 
-    # print(f'\n I found these: {sorted(found)}')
+    print(f'\n I found these: {sorted(found)}')
 
-    # print(f'\n The custom RE is : {customRE}')
+    print(f'\n The custom RE is : {customRE}')
 
 if __name__ == '__main__':
     main()
